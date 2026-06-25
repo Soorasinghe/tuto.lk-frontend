@@ -1,10 +1,13 @@
 import { Metadata } from "next";
 
+// 🔥 Dynamically grab the API URL
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+
 // This function runs on the server before the page loads.
 // It fetches the teacher's data and dynamically writes the SEO tags!
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   try {
-    const res = await fetch(`http://127.0.0.1:5001/api/teachers/${params.id}`, { 
+    const res = await fetch(`${apiUrl}/api/teachers/${params.id}`, { 
       // Ensure we don't aggressively cache so new profile pics show up immediately
       cache: 'no-store' 
     });

@@ -20,10 +20,13 @@ export default function PremiumTeacherProfile() {
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState("");
 
+  // 🔥 Dynamically grab the API URL
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+
   useEffect(() => {
     const fetchTeacherProfile = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5001/api/teachers/${teacherId}`);
+        const res = await fetch(`${apiUrl}/api/teachers/${teacherId}`);
         const json = await res.json();
         if (json.success) setTeacher(json.data);
       } catch (error) {
@@ -33,7 +36,7 @@ export default function PremiumTeacherProfile() {
       }
     };
     if (teacherId) fetchTeacherProfile();
-  }, [teacherId]);
+  }, [teacherId, apiUrl]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -64,7 +67,7 @@ export default function PremiumTeacherProfile() {
     setUnlockError("");
 
     try {
-      const res = await fetch(`http://127.0.0.1:5001/api/teachers/${teacherId}/unlock`, {
+      const res = await fetch(`${apiUrl}/api/teachers/${teacherId}/unlock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentName, grade: studentGrade }),
@@ -84,7 +87,6 @@ export default function PremiumTeacherProfile() {
 
   const embedUrl = getYouTubeEmbedUrl(teacher.videoUrl);
 
-  // Reusable inline styles matching Homepage
   const sectionStyle = {
     background: "#fff", border: "1px solid #E5E7EB", borderRadius: 20,
     padding: "32px", marginBottom: 32, boxShadow: "0 4px 24px rgba(0,0,0,0.02)"
@@ -143,15 +145,14 @@ export default function PremiumTeacherProfile() {
             
             {/* Cover Area */}
             <div style={{ 
-  position: "relative", 
-  height: 280, 
-  backgroundImage: teacher.cover_url ? `url('${teacher.cover_url}')` : "linear-gradient(135deg, #E0F2FE, #F3F4F6)", 
-  backgroundPosition: "center",
-  backgroundSize: "cover",
-  backgroundRepeat: "no-repeat",
-  borderBottom: "1px solid #E5E7EB" 
-}}>
-              )
+              position: "relative", 
+              height: 280, 
+              backgroundImage: teacher.cover_url ? `url('${teacher.cover_url}')` : "linear-gradient(135deg, #E0F2FE, #F3F4F6)", 
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+              borderBottom: "1px solid #E5E7EB" 
+            }}>
             </div>
 
             {/* Info Area with Overlapping Avatar */}
