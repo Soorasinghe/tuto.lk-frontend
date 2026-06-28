@@ -20,7 +20,6 @@ export default function PremiumTeacherProfile() {
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState("");
 
-  // 🔥 Dynamically grab the API URL
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
   useEffect(() => {
@@ -82,9 +81,11 @@ export default function PremiumTeacherProfile() {
     }
   };
 
-  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "#6B7280", background: "#F6F7FA" }}>Loading Premium Profile...</div>;
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "#6B7280", background: "#F6F7FA" }}>Loading Profile...</div>;
   if (!teacher) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "#EF4444", background: "#F6F7FA" }}>Tutor not found.</div>;
 
+  // 🔥 FEATURE GATING LOGIC
+  const isPremium = teacher.subscription_tier === 'Premium' || teacher.subscription_tier === 'Normal';
   const embedUrl = getYouTubeEmbedUrl(teacher.videoUrl);
 
   const sectionStyle = {
@@ -124,7 +125,7 @@ export default function PremiumTeacherProfile() {
 
       <div style={{ minHeight: "100vh" }}>
         
-        {/* ── NAV (Matching Homepage) ── */}
+        {/* ── NAV ── */}
         <nav style={{
           position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "0 40px", height: 60, background: "rgba(10,15,30,0.97)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -140,10 +141,8 @@ export default function PremiumTeacherProfile() {
 
         <div style={{ maxWidth: 1200, margin: "40px auto 80px", padding: "0 20px" }}>
           
-          {/* ── LINKEDIN STYLE HERO CARD ── */}
+          {/* ── HERO CARD ── */}
           <div style={{ ...sectionStyle, padding: 0, overflow: "hidden" }}>
-            
-            {/* Cover Area */}
             <div style={{ 
               position: "relative", 
               height: 280, 
@@ -155,9 +154,7 @@ export default function PremiumTeacherProfile() {
             }}>
             </div>
 
-            {/* Info Area with Overlapping Avatar */}
             <div className="hero-flex" style={{ padding: "0 40px 40px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: -65 }}>
-              
               <div className="hero-flex" style={{ display: "flex", alignItems: "flex-end", gap: 24 }}>
                 <div style={{
                   width: 140, height: 140, borderRadius: "50%", border: "4px solid #fff", background: "#EFF6FF", color: "#2563EB",
@@ -189,13 +186,10 @@ export default function PremiumTeacherProfile() {
             </div>
           </div>
 
-          {/* ── TWO COLUMN MAIN LAYOUT ── */}
           <div className="main-layout" style={{ display: "flex", gap: 40, alignItems: "flex-start" }}>
             
-            {/* LEFT COLUMN: Main Content */}
             <main style={{ flex: "1 1 68%", minWidth: 0 }}>
               
-              {/* About Section */}
               {teacher.bio && (
                 <div style={sectionStyle}>
                   <h2 style={{ fontSize: 18, fontWeight: 900, color: "#0A0F1E", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
@@ -206,64 +200,39 @@ export default function PremiumTeacherProfile() {
                 </div>
               )}
 
-              {/* Services & Expertise Grid */}
               <div style={sectionStyle}>
                 <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0A0F1E", borderBottom: "1px solid #E5E7EB", paddingBottom: 16, marginBottom: 24 }}>Teaching Profile</h2>
-                
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 32 }}>
                   <div>
-                    <div style={labelStyle}>
-                      <span style={{ color: "#F59E0B" }}>📚</span> Academic Levels
-                    </div>
+                    <div style={labelStyle}><span style={{ color: "#F59E0B" }}>📚</span> Academic Levels</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {teacher.academicLevels?.length > 0 ? teacher.academicLevels.map((lvl: string) => (
-                        <span key={lvl} style={{...pillStyle, background: "#FFFBEB", border: "1px solid #FDE68A", color: "#D97706"}}>{lvl}</span>
-                      )) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Not specified</span>}
+                      {teacher.academicLevels?.length > 0 ? teacher.academicLevels.map((lvl: string) => <span key={lvl} style={{...pillStyle, background: "#FFFBEB", border: "1px solid #FDE68A", color: "#D97706"}}>{lvl}</span>) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Not specified</span>}
                     </div>
                   </div>
-
                   <div>
-                    <div style={labelStyle}>
-                      <span style={{ color: "#38BDF8" }}>📍</span> Coverage Areas
-                    </div>
+                    <div style={labelStyle}><span style={{ color: "#38BDF8" }}>📍</span> Coverage Areas</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {teacher.locations?.length > 0 ? teacher.locations.map((loc: any, idx: number) => (
-                        <span key={idx} style={pillStyle}>{loc.village || loc.city || loc.district}</span>
-                      )) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Not specified</span>}
+                      {teacher.locations?.length > 0 ? teacher.locations.map((loc: any, idx: number) => <span key={idx} style={pillStyle}>{loc.village || loc.city || loc.district}</span>) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Not specified</span>}
                     </div>
                   </div>
-
                   <div>
-                    <div style={labelStyle}>
-                      <span style={{ color: "#8B5CF6" }}>🏫</span> Institutes
-                    </div>
+                    <div style={labelStyle}><span style={{ color: "#8B5CF6" }}>🏫</span> Institutes</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {teacher.institutes?.length > 0 ? teacher.institutes.map((inst: string) => (
-                        <span key={inst} style={{...pillStyle, background: "#F5F3FF", border: "1px solid #EDE9FE", color: "#6D28D9"}}>{inst}</span>
-                      )) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>No institutes specified</span>}
+                      {teacher.institutes?.length > 0 ? teacher.institutes.map((inst: string) => <span key={inst} style={{...pillStyle, background: "#F5F3FF", border: "1px solid #EDE9FE", color: "#6D28D9"}}>{inst}</span>) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>No institutes specified</span>}
                     </div>
                   </div>
-
                   <div>
-                    <div style={labelStyle}>
-                      <span style={{ color: "#10B981" }}>🗣️</span> Teaching Medium
-                    </div>
+                    <div style={labelStyle}><span style={{ color: "#10B981" }}>🗣️</span> Teaching Medium</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {teacher.teachingMediums?.length > 0 ? teacher.teachingMediums.map((med: string) => (
-                        <span key={med} style={{...pillStyle, background: "#ECFDF5", border: "1px solid #D1FAE5", color: "#047857"}}>{med}</span>
-                      )) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Not specified</span>}
+                      {teacher.teachingMediums?.length > 0 ? teacher.teachingMediums.map((med: string) => <span key={med} style={{...pillStyle, background: "#ECFDF5", border: "1px solid #D1FAE5", color: "#047857"}}>{med}</span>) : <span style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Not specified</span>}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* ── PORTFOLIO & TRACK RECORD (ALWAYS VISIBLE, LINKEDIN STYLE) ── */}
               <div style={sectionStyle}>
                 <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0A0F1E", borderBottom: "1px solid #E5E7EB", paddingBottom: 16, marginBottom: 24 }}>Portfolio & Achievements</h2>
-                
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 32 }}>
-                  
-                  {/* Qualifications */}
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                       <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#FFFBEB", color: "#F59E0B", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #FDE68A", flexShrink: 0 }}>
@@ -271,7 +240,6 @@ export default function PremiumTeacherProfile() {
                       </div>
                       <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0A0F1E" }}>Academic Qualifications</h3>
                     </div>
-                    
                     {teacher.qualifications?.length > 0 ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                         {teacher.qualifications.map((q: string, i: number) => (
@@ -281,14 +249,9 @@ export default function PremiumTeacherProfile() {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div style={{ padding: "16px", borderRadius: 12, border: "1px dashed #D1D5DB", background: "#F9FAFB" }}>
-                        <p style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic", textAlign: "center" }}>No qualifications listed by this tutor.</p>
-                      </div>
-                    )}
+                    ) : <div style={{ padding: "16px", borderRadius: 12, border: "1px dashed #D1D5DB", background: "#F9FAFB" }}><p style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic", textAlign: "center" }}>No qualifications listed by this tutor.</p></div>}
                   </div>
 
-                  {/* Track Record */}
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                       <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#EFF6FF", color: "#38BDF8", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #DBEAFE", flexShrink: 0 }}>
@@ -296,7 +259,6 @@ export default function PremiumTeacherProfile() {
                       </div>
                       <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0A0F1E" }}>Track Record & Experience</h3>
                     </div>
-                    
                     {teacher.trackRecord?.length > 0 ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                         {teacher.trackRecord.map((t: string, i: number) => (
@@ -306,18 +268,14 @@ export default function PremiumTeacherProfile() {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div style={{ padding: "16px", borderRadius: 12, border: "1px dashed #D1D5DB", background: "#F9FAFB" }}>
-                        <p style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic", textAlign: "center" }}>No track record listed by this tutor.</p>
-                      </div>
-                    )}
+                    ) : <div style={{ padding: "16px", borderRadius: 12, border: "1px dashed #D1D5DB", background: "#F9FAFB" }}><p style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic", textAlign: "center" }}>No track record listed by this tutor.</p></div>}
                   </div>
                 </div>
               </div>
 
-              {/* Video Embed */}
-              {embedUrl && (
-                <div style={{ background: "#0A0F1E", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 12px 32px rgba(0,0,0,0.1)" }}>
+              {/* 🔥 FEATURE GATING: PREMIUM VIDEO EMBED */}
+              {isPremium && embedUrl && (
+                <div style={{ background: "#0A0F1E", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 12px 32px rgba(0,0,0,0.1)", marginBottom: 32 }}>
                   <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
                     <h3 style={{ fontSize: 16, fontWeight: 900, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ color: "#EF4444" }}><svg style={{ width: 20, height: 20 }} fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path></svg></span>
@@ -325,14 +283,28 @@ export default function PremiumTeacherProfile() {
                     </h3>
                   </div>
                   <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", background: "#000" }}>
-                    <iframe 
-                      src={embedUrl} title="Tutor Introduction" frameBorder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
-                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-                    ></iframe>
+                    <iframe src={embedUrl} title="Tutor Introduction" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}></iframe>
                   </div>
                 </div>
               )}
+
+              {/* 🔥 FEATURE GATING: PREMIUM PHOTO GALLERY */}
+              {isPremium && teacher.gallery_urls?.length > 0 && (
+                <div style={sectionStyle}>
+                  <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0A0F1E", marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+                     <svg width="24" height="24" fill="none" stroke="#6B7280" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                     Class Gallery
+                  </h2>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
+                    {teacher.gallery_urls.map((url: string, i: number) => (
+                      <div key={i} style={{ width: "100%", paddingTop: "100%", position: "relative", borderRadius: 16, overflow: "hidden", border: "1px solid #E5E7EB", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+                         <img src={url} alt="Class Activity" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </main>
 
             {/* RIGHT COLUMN: Contact Widget */}
