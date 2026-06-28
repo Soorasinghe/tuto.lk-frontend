@@ -10,7 +10,7 @@ import {
   sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
-  getAdditionalUserInfo
+  updateProfile // Added to set the display name on email signup
 } from "firebase/auth";
 
 // --- SVG Icons ---
@@ -73,24 +73,29 @@ export default function LoginPage() {
           return;
         }
 
-        // 🔥 Route Admin to Admin Dashboard, Teacher to Teacher Dashboard
-        // 🔥 Route Admin to Admin Dashboard, Teacher to Teacher Dashboard
+        // 🔥 1. Get secure token
+        const token = await user.getIdToken();
+
+        // 🔥 2. Sync profile and get role data
         try {
-          const res = await fetch(`${API_URL}/api/teachers/${user.uid}`, {
-            cache: 'no-store', // Forces Next.js to fetch fresh data
-            headers: { 'Cache-Control': 'no-cache' }
+          const res = await fetch(`${API_URL}/api/teachers/sync`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            }
           });
           const json = await res.json();
           
-          console.log("LOGIN CHECK DATA:", json.data); // Look at your browser console!
+          console.log("LOGIN SYNC DATA:", json.data); 
 
-          if (json.success && json.data.role === "admin") {
+          if (json.success && json.data?.role === "admin") {
             router.push("/admin");
           } else {
             router.push("/dashboard");
           }
         } catch (fetchErr) {
-          console.error("Failed to fetch user role, defaulting to dashboard:", fetchErr);
+          console.error("Failed to sync/fetch user role, defaulting to dashboard:", fetchErr);
           router.push("/dashboard");
         }
 
@@ -98,6 +103,9 @@ export default function LoginPage() {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
+        // Add the display name to the Firebase Auth profile
+        await updateProfile(user, { displayName: name || "New Tutor" });
+
         // Send Verification Email
         try {
           await sendEmailVerification(user);
@@ -105,6 +113,8 @@ export default function LoginPage() {
           console.error("Firebase failed to send verification email:", emailErr);
         }
 
+        // Create the profile in Firestore via the register endpoint
+        // (We keep this as /register because the user isn't fully verified/logged in yet to pass token auth)
         await fetch(`${API_URL}/api/teachers/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -156,42 +166,31 @@ export default function LoginPage() {
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
       
-      const details = getAdditionalUserInfo(userCredential);
-      
-      if (details?.isNewUser) {
-        await fetch(`${API_URL}/api/teachers/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            id: user.uid, 
-            name: user.displayName || "New Tutor", 
-            phone: "Update via Dashboard", 
-            email: user.email,
-            termsAccepted: true,
-            termsAcceptedAt: new Date().toISOString()
-          }),
-        });
-        router.push("/dashboard");
-      }  else {
-        // 🔥 Route Returning Google User based on Admin Role
-        try {
-          const res = await fetch(`${API_URL}/api/teachers/${user.uid}`, {
-            cache: 'no-store', // Forces Next.js to fetch fresh data
-            headers: { 'Cache-Control': 'no-cache' }
-          });
-          const json = await res.json();
-          
-          console.log("GOOGLE LOGIN CHECK DATA:", json.data); // Look at your browser console!
+      // 🔥 1. Get secure token
+      const token = await user.getIdToken();
 
-          if (json.success && json.data.role === "admin") {
-            router.push("/admin");
-          } else {
-            router.push("/dashboard");
+      // 🔥 2. Sync profile (Creates it if they are new, just fetches if they are returning)
+      try {
+        const res = await fetch(`${API_URL}/api/teachers/sync`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
           }
-        } catch (fetchErr) {
-          console.error("Failed to fetch user role, defaulting to dashboard:", fetchErr);
+        });
+        const json = await res.json();
+        
+        console.log("GOOGLE SYNC DATA:", json.data);
+
+        // 🔥 3. Route based on role
+        if (json.success && json.data?.role === "admin") {
+          router.push("/admin");
+        } else {
           router.push("/dashboard");
         }
+      } catch (fetchErr) {
+        console.error("Failed to sync Google user, defaulting to dashboard:", fetchErr);
+        router.push("/dashboard");
       }
 
     } catch (err: any) {
